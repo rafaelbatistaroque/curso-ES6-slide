@@ -48,10 +48,37 @@ export default class Slide {
         this.wrapper.addEventListener('mouseup', this.encerrarEventoAoTirarMouseSobreImagem);
         this.wrapper.addEventListener('touchend', this.encerrarEventoAoTirarMouseSobreImagem);
     }
+    calcularPosicaoSlide(slide) {
+        const margem = (this.wrapper.offsetWidth - slide.offsetWidth) / 2;
+        return -(slide.offsetLeft - margem);
+    }
+    navegacaoSlide(index) {
+        const ultimo = this.atributosSlide.length - 1;
+        this.index = {
+            slideAnterior: index ? index - 1 : undefined,
+            slideAtual: index,
+            slideProximo: index === ultimo ? undefined : index + 1,
+        };
+        console.log(this.index);
+
+    }
+    obterAtributosSlide() {
+        this.atributosSlide = [...this.slide.children].map(elemento => {
+            const posicaoEsquerdaDeCadaSlide = this.calcularPosicaoSlide(elemento);
+            return { posicaoEsquerdaDeCadaSlide, elemento };
+        });
+    }
+    movimentarSlide(index) {
+        const slideAtivo = this.atributosSlide[index];
+        this.moverSlide(slideAtivo.posicaoEsquerdaDeCadaSlide);
+        this.navegacaoSlide(index);
+        this.distancia.posicaoFinal = slideAtivo.posicaoEsquerdaDeCadaSlide;
+    }
     iniciar() {
         if (this.wrapper && this.slide) {
             this.bindEventos();
             this.adicionarEventosSlide();
+            this.obterAtributosSlide();
         }
         return this;
     }
