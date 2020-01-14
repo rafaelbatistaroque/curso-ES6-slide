@@ -5,11 +5,17 @@ export default class Slide {
         this.distancia = { posicaoFinal: 0, inicioEixoX: 0, totalMovimento: 0 };
     }
     removerPadroes(event) {
-        event.preventDefault();
-        this.distancia.inicioEixoX = event.clientX;
-        console.log(this.distancia.inicioEixoX);
-
-        this.wrapper.addEventListener('mousemove', this.iniciarEventoAoMoverMouseSobreImagem);
+        let tipoMovimento;
+        if (event.type === 'mousedown') {
+            event.preventDefault();
+            this.distancia.inicioEixoX = event.clientX;
+            tipoMovimento = 'mousemove';
+        }
+        else {
+            this.distancia.inicioEixoX = event.changedTouches[0].clientX;
+            tipoMovimento = 'touchmove';
+        }
+        this.wrapper.addEventListener(tipoMovimento, this.iniciarEventoAoMoverMouseSobreImagem);
     }
     moverSlide(distanciaX) {
         this.distancia.ultimaPosicao = distanciaX;
@@ -21,11 +27,13 @@ export default class Slide {
 
     }
     iniciarEventoAoMoverMouseSobreImagem() {
-        const posicaoFinal = this.atualizarPosicaoCliqueMouse(event.clientX);
+        const posicaoInicial = (event.type === 'mousemove') ? event.clientX : event.changedTouches[0].clientX;
+        const posicaoFinal = this.atualizarPosicaoCliqueMouse(posicaoInicial);
         this.moverSlide(posicaoFinal);
     }
     encerrarEventoAoTirarMouseSobreImagem() {
-        this.wrapper.removeEventListener('mousemove', this.iniciarEventoAoMoverMouseSobreImagem);
+        const posicaoInicial = (event.type === 'mouseup') ? 'mousemove' : 'touchmove';
+        this.wrapper.removeEventListener(posicaoInicial, this.iniciarEventoAoMoverMouseSobreImagem);
         this.distancia.posicaoFinal = this.distancia.ultimaPosicao;
     }
     bindEventos() {
@@ -35,7 +43,10 @@ export default class Slide {
     }
     adicionarEventosSlide() {
         this.wrapper.addEventListener('mousedown', this.removerPadroes);
+        this.wrapper.addEventListener('touchstart', this.removerPadroes);
+
         this.wrapper.addEventListener('mouseup', this.encerrarEventoAoTirarMouseSobreImagem);
+        this.wrapper.addEventListener('touchend', this.encerrarEventoAoTirarMouseSobreImagem);
     }
     iniciar() {
         if (this.wrapper && this.slide) {
